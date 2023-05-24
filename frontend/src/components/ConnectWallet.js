@@ -14,7 +14,7 @@ export function ConnectWallet({ connectWallet, networkError, dismiss }) {
         />
       )}
       <div className="main-visual">
-        <p>Please connect to your wallet!</p>
+        <p>Please connect to your wallet!!</p>
         <button
           type="button"
           onClick={connectWallet}
