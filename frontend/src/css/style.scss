@@ -1,0 +1,129 @@
+// extend classes
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+
+@mixin classmorphism {
+    background: rgba( 255, 255, 255, 0.2 );
+    border: 1px solid rgba( 255, 255, 255, 0.15 );
+    backdrop-filter: blur( 5px );
+    border-radius: 10px;
+    -webkit-backdrop-filter: blur( 5px );
+    box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+    color: #fff;
+    text-shadow: rgb(128, 128, 128) 2px 2px 10px;
+    font-weight: 300;
+    &:hover {
+        background: rgba( 255, 255, 255, 0.35 );
+        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.5 );
+    }
+}
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+.main {
+    background: linear-gradient(112.87deg, #208cd9 0%, #9e205d 100%);
+    width: 100vw;
+    min-height: 100vh;
+    color: #fff;
+    .navbar {
+        padding: 12px;
+        position: fixed;
+        width: 100vw;
+        z-index: 1;
+        .navbar-brand {
+            color: #fff;
+            font-size: 24px;
+            font-weight: bolder;
+        }
+    }
+}
+.icon-button {
+    @include classmorphism;
+
+    align-items: center;
+    border-radius: 50%;
+    display: flex;
+    float: left;
+    height: 40px;
+    justify-content: center;
+    width: 40px;
+    margin-left: 12px;
+    svg {
+       height: 24px;
+       width: 24px;
+    }
+}
+
+.content {
+    width: 100vw;
+    .main-visual {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        height: 50vh;
+        justify-content: center;
+        p {
+            text-shadow: 1px 1px 2px rgba( 31, 38, 135, 0.37 );
+            color: #fff;
+            font-size: 52px;
+            font-weight: bolder;
+            text-align: center;
+        }
+        button {
+            @include classmorphism; 
+            padding: 0.4rem 0.8rem;
+        }
+    }
+    .main-content {
+        min-height: calc(60vh - 70px);
+        padding: 20px;
+        width: calc(100vw - 40px);
+        margin: 0 10px;
+        h4 {
+            margin-bottom: 20px;
+        }
+        .reciept-list {
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            .reciept-container {
+                @include classmorphism;
+
+                border-radius: 10px;
+                display: flex;
+                flex-direction: column;
+                height: calc((100vh - 200px) / 2);
+                justify-content: space-between;
+                padding: 12px;
+                &:hover {
+                    transform: rotate(1deg);
+                }
+                .status {
+                    display: flex;
+                    justify-content: space-between;
+                }
+                .bedge {
+                    box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+                    width: 90px;
+                    height: 24px;
+                    border-radius: 6px;
+                    text-align: center;
+                    color: #fff;
+                    &.reject-case {
+                        background: #852d2d;
+                    }
+                    &.progress-case {
+                        background: #618f5d;
+                    }
+                    &.done-case {
+                        background: #2f4681;
+                    }
+                }
+                hr {
+                    border: 1px solid rgba( 255, 255, 255, 0.25 );
+                }
+            }
+        }
+    }
+}
