@@ -11,7 +11,12 @@ jobs:
       working-directory: ./frontend
     steps:
       - uses: actions/checkout@v3
-      - run: npm run build --if-present
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           entryPoint: ./frontend
