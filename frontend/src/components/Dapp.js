@@ -14,11 +14,17 @@ import contractAddress from "../contracts/contract-address.json";
 import { NoWalletDetected } from "./NoWalletDetected";
 import { ConnectWallet } from "./ConnectWallet";
 import { Loading } from "./Loading";
-import { Transfer } from "./Transfer";
 import { TransactionErrorMessage } from "./TransactionErrorMessage";
 import { WaitingForTransactionMessage } from "./WaitingForTransactionMessage";
-import { NoTokensMessage } from "./NoTokensMessage";
 import { UploadFile } from "./UploadFile";
+import { MainVisual } from "./MainVisual"
+
+// bootstrap
+import { Button } from "react-bootstrap";
+
+// icons
+import { Bell, Person } from 'react-bootstrap-icons';
+import { RecieptList } from "./RecieptList";
 
 // This is the default id used by the Hardhat Network
 const HARDHAT_NETWORK_ID = '31337';
@@ -36,6 +42,7 @@ const ERROR_CODE_TX_REJECTED_BY_USER = 4001;
 // Note that (3) and (4) are specific of this sample application, but they show
 // you how to keep your Dapp and contract's state in sync,  and how to send a
 // transaction.
+
 export class Dapp extends React.Component {
   constructor(props) {
     super(props);
@@ -53,84 +60,105 @@ export class Dapp extends React.Component {
       transactionError: undefined,
       networkError: undefined,
     };
+    this.reciepts = [
+      {
+        title: 'Title 1',
+        author: 'MinBak',
+        date: '2023-05-24',
+        status: 'Reject'
+      },
+      {
+        title: 'Title 2',
+        author: 'MinBak',
+        date: '2023-05-24',
+        status: 'Progress'
+      },
+      {
+        title: 'Title 3',
+        author: 'MinBak',
+        date: '2023-05-24',
+        status: 'Progress'
+      },
+      {
+        title: 'Title 4',
+        author: 'MinBak',
+        date: '2023-05-24',
+        status: 'Reject'
+      },
+      {
+        title: 'Title 5',
+        author: 'MinBak',
+        date: '2023-05-24',
+        status: 'Done'
+      },
+      {
+        title: 'Title 6',
+        author: 'MinBak',
+        date: '2023-05-24',
+        status: 'Progress'
+      },
+      {
+        title: 'Title 7',
+        author: 'MinBak',
+        date: '2023-05-24',
+        status: 'Progress'
+      },
+      {
+        title: 'Title 8',
+        author: 'MinBak',
+        date: '2023-05-24',
+        status: 'Progress'
+      },
+      {
+        title: 'Title 9',
+        author: 'MinBak',
+        date: '2023-05-24',
+        status: 'Done'
+      },
+    ]
 
     this.state = this.initialState;
   }
 
   render() {
-    // Ethereum wallets inject the window.ethereum object. If it hasn't been
-    // injected, we instruct the user to install a wallet.
-    if (window.ethereum === undefined) {
-      return <NoWalletDetected />;
-    }
-
-    // The next thing we need to do, is to ask the user to connect their wallet.
-    // When the wallet gets connected, we are going to save the users's address
-    // in the component's state. So, if it hasn't been saved yet, we have
-    // to show the ConnectWallet component.
-    //
-    // Note that we pass it a callback that is going to be called when the user
-    // clicks a button. This callback just calls the _connectWallet method.
-    if (!this.state.selectedAddress) {
-      return (
-        <ConnectWallet 
-          connectWallet={() => this._connectWallet()} 
-          networkError={this.state.networkError}
-          dismiss={() => this._dismissNetworkError()}
-        />
-      );
-    }
-
-    // If the token data or the user's balance hasn't loaded yet, we show
-    // a loading component.
-    if (!this.state.tokenData || !this.state.balance) {
-      return <Loading />;
-    }
-
-    // If everything is loaded, we render the application.
     return (
-      <div className="container p-4">
-        <div className="row">
-          <div className="col-12">
-            <h1>
-              {this.state.tokenData.name} ({this.state.tokenData.symbol})
-            </h1>
-            <p>
-              Welcome <b>{this.state.selectedAddress}</b>, you have{" "}
-              <b>
-                {this.state.balance.toString()} {this.state.tokenData.symbol}
-              </b>
-              .
-            </p>
+      <div className="main">
+        <nav className="navbar bg-body-tertiary">
+          <div className="container-fluid">
+            <a className="navbar-brand" href="">
+              Club NFT
+            </a>
+            <div>
+              <div className="icon-button">
+                <Bell/>
+              </div>
+              <div className="icon-button">
+                <Person />
+              </div>
+            </div>
           </div>
+        </nav>
+        <div className="content">
+          {
+            !this.state.selectedAddress &&
+            <ConnectWallet 
+              connectWallet={() => this._connectWallet()} 
+              networkError={this.state.networkError}
+              dismiss={() => this._dismissNetworkError()}
+            />
+          }
+          {
+            this.state.selectedAddress && 
+              <MainVisual />
+          }
+          {
+            this.state.selectedAddress &&
+              <div className="main-content">
+                <h4>Your Reciepts</h4>
+                <RecieptList reciepts={this.reciepts}/>
+              </div>
+          }
         </div>
-
-        <hr />
-
-        <div className="row">
-          <div className="col-12">
-            {/* 
-              Sending a transaction isn't an immediate action. You have to wait
-              for it to be mined.
-              If we are waiting for one, we show a message here.
-            */}
-            {this.state.txBeingSent && (
-              <WaitingForTransactionMessage txHash={this.state.txBeingSent} />
-            )}
-
-            {/* 
-              Sending a transaction can fail in multiple ways. 
-              If that happened, we show a message here.
-            */}
-            {this.state.transactionError && (
-              <TransactionErrorMessage
-                message={this._getRpcErrorMessage(this.state.transactionError)}
-                dismiss={() => this._dismissTransactionError()}
-              />
-            )}
-          </div>
-        </div>
-        <UploadFile />
       </div>
     );
   }
