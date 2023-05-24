@@ -195,12 +195,18 @@ export class Dapp extends React.Component {
 
     // Then, we initialize the contract using that provider and the token's
     // artifact. You can do this same thing with your contracts.
-    this._token = new ethers.Contract(
+    const tokenContract = new ethers.Contract(
       contractAddress.Token,
       TokenArtifact.abi,
       this._provider.getSigner(0)
     );
+    this._token = tokenContract;
+
+    console.log("Token Contract Instance:", this._token);
+    return tokenContract;
   }
+
+  
 
   // The next two methods are needed to start and stop polling data. While
   // the data being polled here is specific to this example, you can use this

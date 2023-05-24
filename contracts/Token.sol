@@ -11,12 +11,21 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 
+struct TokenMetadata {
+    string name;
+    //uint256 size;
+    string fileType;
+    string url;
+}
 
 
 // This is the main building block for smart contracts.
 contract Token is ERC721URIStorage, Ownable{
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
+    mapping(uint256 => TokenMetadata) private tokenMetadataMap;
+    uint256 private tokenIdCounter;
+    
 
     // The fixed amount of tokens stored in an unsigned integer type variable.
     uint256 public totalSupply = 1000000;
@@ -35,16 +44,23 @@ contract Token is ERC721URIStorage, Ownable{
         //owner = msg.sender;
     }
 
-    function mintNFT(address recipient, string memory tokenURI) public onlyOwner returns (uint256){
-    
-        _tokenIds.increment();
-
-        uint256 newItemId = _tokenIds.current();
-        _mint(recipient, newItemId);
-        _setTokenURI(newItemId, tokenURI);
-
-        return newItemId;
+    function _setTokenMetadata(uint256 tokenId, TokenMetadata memory tokenMetadata) internal {
+        tokenMetadataMap[tokenId] = tokenMetadata;
+        // 또는 토큰 ID에 해당하는 토큰의 메타데이터를 토큰 컨트랙트의 상태 변수에 저장할 수도 있습니다.
+        //Token[tokenId].metadata = tokenMetadata;
+        // 실제 구현 방식은 토큰 컨트랙트의 로직과 요구사항에 따라 다를 수 있습니다.
     }
+
+    function mintNFT(TokenMetadata memory tokenMetadata) public {
+        tokenIdCounter++; // 카운터를 증가시킵니다.
+
+        uint256 tokenId = tokenIdCounter; // 카운터 값을 tokenId로 설정합니다.
+        
+        require(!_exists(tokenId), "Token ID already exists");
+        _safeMint(msg.sender, tokenId);
+        _setTokenMetadata(tokenId, tokenMetadata);
+    }
+
 
     /**
      * A function to transfer tokens.

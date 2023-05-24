@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { storage } from '../firebase';
-import { ref, uploadBytes } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL  } from "firebase/storage";
+import { v4 as uuidv4 } from 'uuid';
+// import {Dapp} from './Dapp';
 
 // Import React FilePond
 import { FilePond, registerPlugin } from 'react-filepond'
@@ -19,19 +21,49 @@ import { Button } from 'bootstrap'
 // Register the plugins
 registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview)
 
+// const dapp = new Dapp();
+
 // Our app
 export function UploadFile({}) {
-  const [files, setFiles] = useState([])
-  const uploadHandler = () => {
-    files.forEach(({file}) => {
-        console.log(file);
-        const storageRef = ref(storage, file.name);
-        console.log(storageRef);
-        uploadBytes(storageRef, file).then((snapshot) => {
-            console.log('Uploaded!');
-          });
-    })
-  }
+  
+  const [files, setFiles] = useState([]);
+
+  const uploadHandler = async () => {
+    const { Dapp } = await import('./Dapp');
+    const dapp = new Dapp();
+    const fileUploadPromises = files.map(async ({ file }) => {
+      const fileName = uuidv4();
+      const storageRef = ref(storage, fileName);
+
+      await uploadBytes(storageRef, file);
+
+      const downloadUrl = await getDownloadURL(storageRef);
+
+      // 파일 업로드 완료 후 토큰 민팅
+      const tokenId = fileName;
+      const tokenMetadata = {
+        name: file.name,
+        // size: file.size,
+        fileType: file.type,
+        url: downloadUrl,
+      };
+
+      // Dapp.js에서 생성한 token 인스턴스 가져오기
+      const tokenContract = await dapp._initializeEthers(); // Dapp.js에서 _initializeEthers 함수를 호출하여 token 인스턴스를 생성하는 코드
+      console.log("Token Contract Instance:", tokenContract);
+      // 토큰 민팅을 위한 mint 함수 호출
+      const transaction = await tokenContract.mintNFT(tokenMetadata);
+      await transaction.wait();
+
+      console.log('File uploaded and token minted successfully!');
+    });
+
+    await Promise.all(fileUploadPromises);
+
+    console.log('All files uploaded and tokens minted!');
+  };
+
+
   return (
     <div className="App">
       <FilePond
