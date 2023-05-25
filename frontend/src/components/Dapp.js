@@ -26,6 +26,11 @@ import { Button } from "react-bootstrap";
 import { Bell, Person } from 'react-bootstrap-icons';
 import { RecieptList } from "./RecieptList";
 
+// upload
+import { storage } from '../firebase';
+import { ref, uploadBytes, getDownloadURL  } from "firebase/storage";
+import { v4 as uuidv4 } from 'uuid';
+
 // This is the default id used by the Hardhat Network
 const HARDHAT_NETWORK_ID = '31337';
 
@@ -149,7 +154,7 @@ export class Dapp extends React.Component {
           }
           {
             this.state.selectedAddress && 
-              <MainVisual />
+              <MainVisual uploadHandler={this.uploadHandler}/>
           }
           {
             this.state.selectedAddress &&
@@ -369,4 +374,33 @@ export class Dapp extends React.Component {
       this._switchChain();
     }
   }
+
+  uploadHandler = async (files) => {
+    const fileUploadPromises = files.map(async ({ file }) => {
+      const fileName = uuidv4();
+      const storageRef = ref(storage, fileName);
+
+      await uploadBytes(storageRef, file);
+
+      const downloadUrl = await getDownloadURL(storageRef);
+
+      // 파일 업로드 완료 후 토큰 민팅
+      const tokenId = fileName;
+      const tokenMetadata = {
+        name: file.name,
+        // size: file.size,
+        fileType: file.type,
+        url: downloadUrl,
+      };
+      // 토큰 민팅을 위한 mint 함수 호출
+      const transaction = await this._token.mintNFT(tokenMetadata);
+      await transaction.wait();
+
+      console.log('File uploaded and token minted successfully!');
+    });
+
+    await Promise.all(fileUploadPromises);
+
+    console.log('All files uploaded and tokens minted!');
+  };
 }
