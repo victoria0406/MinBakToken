@@ -24,44 +24,9 @@ registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview)
 // const dapp = new Dapp();
 
 // Our app
-export function UploadFile({}) {
+export function UploadFile({uploadHandler}) {
   
   const [files, setFiles] = useState([]);
-
-  const uploadHandler = async () => {
-    const { Dapp } = await import('./Dapp');
-    const dapp = new Dapp();
-    const fileUploadPromises = files.map(async ({ file }) => {
-      const fileName = uuidv4();
-      const storageRef = ref(storage, fileName);
-
-      await uploadBytes(storageRef, file);
-
-      const downloadUrl = await getDownloadURL(storageRef);
-
-      // 파일 업로드 완료 후 토큰 민팅
-      const tokenId = fileName;
-      const tokenMetadata = {
-        name: file.name,
-        // size: file.size,
-        fileType: file.type,
-        url: downloadUrl,
-      };
-
-      // Dapp.js에서 생성한 token 인스턴스 가져오기
-      const tokenContract = await dapp._initializeEthers(); // Dapp.js에서 _initializeEthers 함수를 호출하여 token 인스턴스를 생성하는 코드
-      console.log("Token Contract Instance:", tokenContract);
-      // 토큰 민팅을 위한 mint 함수 호출
-      const transaction = await tokenContract.mintNFT(tokenMetadata);
-      await transaction.wait();
-
-      console.log('File uploaded and token minted successfully!');
-    });
-
-    await Promise.all(fileUploadPromises);
-
-    console.log('All files uploaded and tokens minted!');
-  };
 
 
   return (
@@ -75,7 +40,7 @@ export function UploadFile({}) {
         labelIdle='Drag & Drop your files or <span class="filepond--label-action">Browse</span>'
       />
         <button
-            onClick={uploadHandler}
+            onClick={() => uploadHandler(files)}
         >Upload</button>
     </div>
   )
