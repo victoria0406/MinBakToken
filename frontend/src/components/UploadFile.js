@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { storage } from '../firebase';
-import { ref, uploadBytes, getDownloadURL  } from "firebase/storage";
-import { v4 as uuidv4 } from 'uuid';
+import { useNavigate } from 'react-router-dom';
 // import {Dapp} from './Dapp';
 
 // Import React FilePond
@@ -21,16 +19,37 @@ import { Button } from 'bootstrap'
 // Register the plugins
 registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview)
 
-// const dapp = new Dapp();
-
 // Our app
-export function UploadFile({uploadHandler}) {
-  
-  const [files, setFiles] = useState([]);
+export function UploadFile({uploadHandler, updateReciepts}) {
+  const navigate = useNavigate();
 
+  const [files, setFiles] = useState([]);
+  const [title, setTitle] = useState('');
+  const [club, setClub] = useState('');
+
+  const clickHandler = async () => {
+    const tokenIds = await uploadHandler(files);
+    const date = Date.now();
+    console.log(date);
+    const reciept = {
+      title, club, date, state: 'Progress', tokens:tokenIds
+    };
+    updateReciepts(reciept);
+    navigate('/');
+  }
+    
+  const handleTitleChange = (e) => {
+    setTitle(e.target.value);
+  };
+
+  const handleClubChange = (e) => {
+    setClub(e.target.value);
+  };
 
   return (
-    <div className="App">
+    <div className="file-upload">
+      <input type="text" value={title} onChange={handleTitleChange} placeholder="Enter a title" />
+      <input type="text" value={club} onChange={handleClubChange} placeholder="Enter your club" />
       <FilePond
         files={files}
         onupdatefiles={setFiles}
@@ -40,8 +59,8 @@ export function UploadFile({uploadHandler}) {
         labelIdle='Drag & Drop your files or <span class="filepond--label-action">Browse</span>'
       />
         <button
-            onClick={() => uploadHandler(files)}
-        >Upload</button>
+            onClick={clickHandler}
+        >Mint Your Reciepts</button>
     </div>
   )
 }
