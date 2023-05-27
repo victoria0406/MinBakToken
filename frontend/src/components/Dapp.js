@@ -185,10 +185,12 @@ export class Dapp extends React.Component {
 
   async _initializeReciepts() {
     const getReciepts = await getDocs(collection(db, "tokens"));
-    getReciepts.forEach((doc) => {
+    getReciepts.forEach(async (doc) => {
       const reciept = doc.data();
-      console.log(reciept.title, reciept.club, reciept.tokens, reciept.date);
-      this.reciepts.push(reciept);
+      const isMine = await this.isTokenOwner(reciept?.tokens[0]);
+      if (isMine) {
+        this.reciepts.push(reciept)
+      }
     });
   }
 
@@ -218,6 +220,8 @@ export class Dapp extends React.Component {
 
   async _updateBalance() {
     const balance = await this._token.balanceOf(this.state.selectedAddress);
+    // const tokenIds = await this._token.tokensOfOwner(this.state.selectedAddress);
+    // console.log(tokenIds)
     this.setState({ balance });
   }
 
@@ -325,6 +329,7 @@ export class Dapp extends React.Component {
   uploadHandler = async (files) => {
     const fileUploadPromises = files.map(async ({ file }) => {
       const fileName = uuidv4();
+      console.log(fileName);
       const storageRef = ref(storage, fileName);
 
       await uploadBytes(storageRef, file);
@@ -332,15 +337,14 @@ export class Dapp extends React.Component {
       const downloadUrl = await getDownloadURL(storageRef);
 
       // 파일 업로드 완료 후 토큰 민팅
-      const tokenId = fileName;
+      const tokenId = uuidTouint256(fileName);
       const tokenMetadata = {
         name: file.name,
-        // size: file.size,
         fileType: file.type,
         url: downloadUrl,
       };
       // 토큰 민팅을 위한 mint 함수 호출
-      const transaction = await this._token.mintNFT(tokenMetadata);
+      const transaction = await this._token.mintNFT(tokenMetadata, tokenId);
       await transaction.wait();
 
       console.log('File uploaded and token minted successfully!');
@@ -361,4 +365,17 @@ export class Dapp extends React.Component {
       console.error("Error adding document: ", e);
     }
   }
+
+  isTokenOwner = async (tokenId) => {
+    const tokenIdBigNumber = ethers.BigNumber.from(tokenId);
+    const owner = await this._token.ownerOf(tokenIdBigNumber);
+    console.log(owner);
+    return owner.toLowerCase() === this.state.selectedAddress.toLowerCase()
+  }
+}
+
+const uuidTouint256 = (uuid) => {
+  const uuidBytes = ethers.utils.arrayify(`0x${uuid.replace(/-/g, "")}`);
+  const randomUint256 = ethers.utils.keccak256(uuidBytes);
+  return randomUint256.toString();
 }
