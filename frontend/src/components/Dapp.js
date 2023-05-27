@@ -366,12 +366,34 @@ export class Dapp extends React.Component {
     }
   }
 
+
+
+  // isTokenOwner = async (tokenId) => {
+  //   const tokenIdBigNumber = ethers.BigNumber.from(tokenId);
+  //   const owner = await this._token.ownerOf(tokenIdBigNumber);
+  //   console.log(owner);
+  //   return owner.toLowerCase() === this.state.selectedAddress.toLowerCase()
+  // }
   isTokenOwner = async (tokenId) => {
     const tokenIdBigNumber = ethers.BigNumber.from(tokenId);
-    const owner = await this._token.ownerOf(tokenIdBigNumber);
-    console.log(owner);
-    return owner.toLowerCase() === this.state.selectedAddress.toLowerCase()
-  }
+    // const owners = await this._token.tokenOwners[tokenId];
+    const owners = await this._token.getTokenOwners(tokenIdBigNumber);
+    // owners 배열이 존재하지 않으면 소유자가 아님을 반환
+    if (!owners) {
+      console.log("owners empty");
+      return false;
+    }
+  
+    for (let i = 0; i < owners.length; i++) {
+      const owner = owners[i];
+      if (owner.toLowerCase() === this.state.selectedAddress.toLowerCase()) {
+        console.log(owner);
+        return true; // 소유자로 확인됨
+      }
+    }
+  
+    return false; // 소유자가 아님
+  };
 }
 
 const uuidTouint256 = (uuid) => {
