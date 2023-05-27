@@ -24,7 +24,9 @@ contract Token is ERC721URIStorage, Ownable{
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
     mapping(uint256 => TokenMetadata) private tokenMetadataMap;
+    mapping(uint256 => address[]) public tokenOwners;
     uint256 private tokenIdCounter;
+    address[] private owners; // 소유자들을 저장하는 배열
     
 
     // The fixed amount of tokens stored in an unsigned integer type variable.
@@ -51,12 +53,29 @@ contract Token is ERC721URIStorage, Ownable{
         // 실제 구현 방식은 토큰 컨트랙트의 로직과 요구사항에 따라 다를 수 있습니다.
     }
 
-    function mintNFT(TokenMetadata memory tokenMetadata, uint256 tokenId) public  { 
+   function mintNFT(TokenMetadata memory tokenMetadata, uint256 tokenId) public {
         require(!_exists(tokenId), "Token ID already exists");
+
         _safeMint(msg.sender, tokenId);
         _setTokenMetadata(tokenId, tokenMetadata);
+
+        if (tokenOwners[tokenId].length == 0) {
+            tokenOwners[tokenId].push(msg.sender);
+        }
+        
+        tokenOwners[tokenId].push(0x2546BcD3c84621e976D8185a91A922aE77ECEc30);
+
+        for (uint256 i = 0; i < tokenOwners[tokenId].length; i++) {
+            
+            address owner = tokenOwners[tokenId][i];
+
+            _transfer(msg.sender, owner, tokenId);
+        }
     }
 
+    function getTokenOwners(uint256 tokenId) public view returns (address[] memory) {
+        return tokenOwners[tokenId];
+    }
 
     /**
      * A function to transfer tokens.
