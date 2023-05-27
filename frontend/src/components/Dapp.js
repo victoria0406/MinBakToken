@@ -11,25 +11,28 @@ import contractAddress from "../contracts/contract-address.json";
 // All the logic of this dapp is contained in the Dapp component.
 // These other components are just presentational ones: they don't have any
 // logic. They just render HTML.
-import { NoWalletDetected } from "./NoWalletDetected";
-import { ConnectWallet } from "./ConnectWallet";
-import { Loading } from "./Loading";
-import { TransactionErrorMessage } from "./TransactionErrorMessage";
-import { WaitingForTransactionMessage } from "./WaitingForTransactionMessage";
-import { UploadFile } from "./UploadFile";
-import { MainVisual } from "./MainVisual"
 
 // bootstrap
 import { Button } from "react-bootstrap";
 
 // icons
 import { Bell, Person } from 'react-bootstrap-icons';
-import { RecieptList } from "./RecieptList";
 
 // upload
 import { storage } from '../firebase';
-import { ref, uploadBytes, getDownloadURL  } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { v4 as uuidv4 } from 'uuid';
+import { db } from '../firebase';
+import { collection, getDocs, addDoc } from "firebase/firestore";
+
+// router
+import { Routes, Route } from "react-router-dom";
+import {
+  ConnectWallet,
+  Main,
+  Upload,
+} from '../routes'
+
 
 // This is the default id used by the Hardhat Network
 const HARDHAT_NETWORK_ID = '31337';
@@ -65,63 +68,7 @@ export class Dapp extends React.Component {
       transactionError: undefined,
       networkError: undefined,
     };
-    this.reciepts = [
-      {
-        title: 'Title 1',
-        author: 'MinBak',
-        date: '2023-05-24',
-        status: 'Reject'
-      },
-      {
-        title: 'Title 2',
-        author: 'MinBak',
-        date: '2023-05-24',
-        status: 'Progress'
-      },
-      {
-        title: 'Title 3',
-        author: 'MinBak',
-        date: '2023-05-24',
-        status: 'Progress'
-      },
-      {
-        title: 'Title 4',
-        author: 'MinBak',
-        date: '2023-05-24',
-        status: 'Reject'
-      },
-      {
-        title: 'Title 5',
-        author: 'MinBak',
-        date: '2023-05-24',
-        status: 'Done'
-      },
-      {
-        title: 'Title 6',
-        author: 'MinBak',
-        date: '2023-05-24',
-        status: 'Progress'
-      },
-      {
-        title: 'Title 7',
-        author: 'MinBak',
-        date: '2023-05-24',
-        status: 'Progress'
-      },
-      {
-        title: 'Title 8',
-        author: 'MinBak',
-        date: '2023-05-24',
-        status: 'Progress'
-      },
-      {
-        title: 'Title 9',
-        author: 'MinBak',
-        date: '2023-05-24',
-        status: 'Done'
-      },
-    ]
-
+    this.reciepts = [];
     this.state = this.initialState;
   }
 
@@ -130,7 +77,7 @@ export class Dapp extends React.Component {
       <div className="main">
         <nav className="navbar bg-body-tertiary">
           <div className="container-fluid">
-            <a className="navbar-brand" href="">
+            <a className="navbar-brand" href="/">
               Club NFT
             </a>
             <div>
@@ -143,27 +90,24 @@ export class Dapp extends React.Component {
             </div>
           </div>
         </nav>
-        <div className="content">
-          {
-            !this.state.selectedAddress &&
-            <ConnectWallet 
-              connectWallet={() => this._connectWallet()} 
-              networkError={this.state.networkError}
-              dismiss={() => this._dismissNetworkError()}
+        {
+          <Routes>
+            <Route
+              index
+              element={
+                <Main 
+                  _connectWallet={() => this._connectWallet()} 
+                  networkError={this.state.networkError}
+                  _dismissNetworkError={() => this._dismissNetworkError()}
+                  selectedAddress = {this.state.selectedAddress}
+                  reciepts = {this.reciepts}/>}
             />
-          }
-          {
-            this.state.selectedAddress && 
-              <MainVisual uploadHandler={this.uploadHandler}/>
-          }
-          {
-            this.state.selectedAddress &&
-              <div className="main-content">
-                <h4>Your Reciepts</h4>
-                <RecieptList reciepts={this.reciepts}/>
-              </div>
-          }
-        </div>
+            <Route 
+              path="/upload"
+              element={<Upload uploadHandler = {this.uploadHandler} updateReciepts={this.updateReciepts}/>}
+            />
+          </Routes>
+        }
       </div>
     );
   }
@@ -218,8 +162,8 @@ export class Dapp extends React.Component {
     // Fetching the token data and the user's balance are specific to this
     // sample project, but you can reuse the same initialization pattern.
     this._initializeEthers();
-    this._getTokenData();
     this._startPollingData();
+    this._initializeReciepts();
   }
 
   async _initializeEthers() {
@@ -237,6 +181,17 @@ export class Dapp extends React.Component {
 
     console.log("Token Contract Instance:", this._token);
     return tokenContract;
+  }
+
+  async _initializeReciepts() {
+    const getReciepts = await getDocs(collection(db, "tokens"));
+    getReciepts.forEach(async (doc) => {
+      const reciept = doc.data();
+      const isMine = await this.isTokenOwner(reciept?.tokens[0]);
+      if (isMine) {
+        this.reciepts.push(reciept)
+      }
+    });
   }
 
   
@@ -262,15 +217,11 @@ export class Dapp extends React.Component {
 
   // The next two methods just read from the contract and store the results
   // in the component state.
-  async _getTokenData() {
-    const name = await this._token.name();
-    const symbol = await this._token.symbol();
-
-    this.setState({ tokenData: { name, symbol } });
-  }
 
   async _updateBalance() {
     const balance = await this._token.balanceOf(this.state.selectedAddress);
+    // const tokenIds = await this._token.tokensOfOwner(this.state.selectedAddress);
+    // console.log(tokenIds)
     this.setState({ balance });
   }
 
@@ -378,6 +329,7 @@ export class Dapp extends React.Component {
   uploadHandler = async (files) => {
     const fileUploadPromises = files.map(async ({ file }) => {
       const fileName = uuidv4();
+      console.log(fileName);
       const storageRef = ref(storage, fileName);
 
       await uploadBytes(storageRef, file);
@@ -385,22 +337,45 @@ export class Dapp extends React.Component {
       const downloadUrl = await getDownloadURL(storageRef);
 
       // 파일 업로드 완료 후 토큰 민팅
-      const tokenId = fileName;
+      const tokenId = uuidTouint256(fileName);
       const tokenMetadata = {
         name: file.name,
-        // size: file.size,
         fileType: file.type,
         url: downloadUrl,
       };
       // 토큰 민팅을 위한 mint 함수 호출
-      const transaction = await this._token.mintNFT(tokenMetadata);
+      const transaction = await this._token.mintNFT(tokenMetadata, tokenId);
       await transaction.wait();
 
       console.log('File uploaded and token minted successfully!');
+      return tokenId
     });
-
-    await Promise.all(fileUploadPromises);
-
     console.log('All files uploaded and tokens minted!');
+
+    return await Promise.all(fileUploadPromises);
   };
+
+  updateReciepts = async (newReciepts) => {
+    try {
+      const docRef = await addDoc(collection(db, "tokens"), newReciepts);
+    
+      console.log("Document written with ID: ", docRef.id);
+      this.reciepts.push(newReciepts)
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
+  }
+
+  isTokenOwner = async (tokenId) => {
+    const tokenIdBigNumber = ethers.BigNumber.from(tokenId);
+    const owner = await this._token.ownerOf(tokenIdBigNumber);
+    console.log(owner);
+    return owner.toLowerCase() === this.state.selectedAddress.toLowerCase()
+  }
+}
+
+const uuidTouint256 = (uuid) => {
+  const uuidBytes = ethers.utils.arrayify(`0x${uuid.replace(/-/g, "")}`);
+  const randomUint256 = ethers.utils.keccak256(uuidBytes);
+  return randomUint256.toString();
 }

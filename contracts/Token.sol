@@ -51,11 +51,7 @@ contract Token is ERC721URIStorage, Ownable{
         // 실제 구현 방식은 토큰 컨트랙트의 로직과 요구사항에 따라 다를 수 있습니다.
     }
 
-    function mintNFT(TokenMetadata memory tokenMetadata) public {
-        tokenIdCounter++; // 카운터를 증가시킵니다.
-
-        uint256 tokenId = tokenIdCounter; // 카운터 값을 tokenId로 설정합니다.
-        
+    function mintNFT(TokenMetadata memory tokenMetadata, uint256 tokenId) public  { 
         require(!_exists(tokenId), "Token ID already exists");
         _safeMint(msg.sender, tokenId);
         _setTokenMetadata(tokenId, tokenMetadata);

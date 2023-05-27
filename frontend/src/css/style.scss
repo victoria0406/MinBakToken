@@ -53,15 +53,20 @@ body {
        width: 24px;
     }
 }
+button {
+    @include classmorphism; 
+    padding: 0.4rem 0.8rem;
+}
 
 .content {
     width: 100vw;
+    padding: 70px 10px 10px 10px;
     .main-visual {
         align-items: center;
         display: flex;
         flex-direction: column;
         gap: 20px;
-        height: 50vh;
+        height: calc(50vh - 70px);
         justify-content: center;
         p {
             text-shadow: 1px 1px 2px rgba( 31, 38, 135, 0.37 );
@@ -70,16 +75,10 @@ body {
             font-weight: bolder;
             text-align: center;
         }
-        button {
-            @include classmorphism; 
-            padding: 0.4rem 0.8rem;
-        }
     }
     .main-content {
         min-height: calc(60vh - 70px);
-        padding: 20px;
         width: calc(100vw - 40px);
-        margin: 0 10px;
         h4 {
             margin-bottom: 20px;
         }
@@ -126,4 +125,29 @@ body {
             }
         }
     }
+    &.upload {
+        display: flex;
+        position: relative;
+        gap: 20px;
+        > * {
+            width: 50%;
+        }
+    }
 }
+
+// .file-upload {
+//     .filepond {
+//         &--wrapper {
+//             min-height: 40vh;
+//             margin-bottom: 20px;
+//         }
+//         &--drop-label {
+//             color: #fff;
+//             max-width: 40vh;
+//         }
+//         &--panel {
+//             @include classmorphism; 
+//             min-height: 40vh;
+//         }
+//     }
+// }
