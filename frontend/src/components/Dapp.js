@@ -35,7 +35,7 @@ import {
 
 
 // This is the default id used by the Hardhat Network
-const HARDHAT_NETWORK_ID = '31337';
+const HARDHAT_NETWORK_ID = '11155111';
 
 // This is an error code that indicates that the user canceled a transaction
 const ERROR_CODE_TX_REJECTED_BY_USER = 4001;
@@ -383,6 +383,8 @@ export class Dapp extends React.Component {
   //   return owner.toLowerCase() === this.state.selectedAddress.toLowerCase()
   // }
   isTokenOwner = async (tokenId) => {
+    console.log(tokenId);
+    if (!tokenId) return;
     const tokenIdBigNumber = ethers.BigNumber.from(tokenId);
     try {
       const owners = await this._token.getTokenOwners(tokenIdBigNumber);
