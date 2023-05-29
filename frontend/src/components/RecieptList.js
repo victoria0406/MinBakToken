@@ -51,8 +51,6 @@ export function RecieptList({reciepts, getMetaDataUrl}){
                 />;
             })}
             <Modal show={reciept?.title != null} onHide={() => setReciept(null)}>
-                <Modal.Header closeButton>
-                </Modal.Header>
                 <Modal.Body>
                     <MemoPreview
                         title={reciept?.title}

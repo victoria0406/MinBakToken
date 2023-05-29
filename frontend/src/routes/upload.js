@@ -42,9 +42,9 @@ export default function Upload({uploadHandler, updateReciepts}) {
     console.log('hihi')
 
     const [files, setFiles] = useState([]);
-    const [title, setTitle] = useState('');
-    const [club, setClub] = useState('');
-    const [addr, setAddr] = useState('');
+    const [title, setTitle] = useState();
+    const [club, setClub] = useState();
+    const [addr, setAddr] = useState();
     const [urls, setUrls] = useState([]);
 
     useEffect(() => {
@@ -74,9 +74,11 @@ export default function Upload({uploadHandler, updateReciepts}) {
     return (
         <div className="content upload">
             <div className="file-upload">
-                <input type="text" value={title} onChange={handleTitleChange} placeholder="Enter a title" />
-                <input type="text" value={club} onChange={handleClubChange} placeholder="Enter your club" />
-                <input type="text" value={addr} onChange={handleAddrChange} placeholder="Enter the address" />
+                <div className='text-inputs'>
+                    <h3><label>Title: </label><input type="text" value={title} onChange={handleTitleChange} placeholder="Enter a title" /></h3>
+                    <p><label>Club: </label><input type="text" value={club} onChange={handleClubChange} placeholder="Enter your club" /></p>
+                    <p><label>Address: </label><input type="text" value={addr} onChange={handleAddrChange} placeholder="Enter the address" /></p>
+                </div>
                 <FilePond
                     files={files}
                     onupdatefiles={setFiles}
@@ -87,7 +89,9 @@ export default function Upload({uploadHandler, updateReciepts}) {
                 />
                 <button
                     onClick={clickHandler}
-                >Mint Your Reciepts</button>
+                >
+                    Mint Your Reciepts
+                </button>
             </div>
             <MemoPreview
                 title={title}

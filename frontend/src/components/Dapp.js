@@ -363,12 +363,13 @@ export class Dapp extends React.Component {
     return await Promise.all(fileUploadPromises);
   };
 
-  updateReciepts = async (newReciepts) => {
+  updateReciepts = async (newReciept) => {
     try {
-      const docRef = await addDoc(collection(db, "tokens"), newReciepts);
-    
+      const docRef = await addDoc(collection(db, "tokens"), newReciept);
+      const newReciepts =  this.state.reciepts
       console.log("Document written with ID: ", docRef.id);
-      this.state.reciepts.push(newReciepts)
+      newReciepts.push(newReciept);
+      this.state.reciepts = newReciepts;
     } catch (e) {
       console.error("Error adding document: ", e);
     }
