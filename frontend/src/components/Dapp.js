@@ -192,7 +192,7 @@ export class Dapp extends React.Component {
       const reciept = doc.data();
       const isMine = await this.isTokenOwner(reciept?.tokens[0]);
       if (isMine) {
-        this.reciepts.push(reciept);
+        this.state.reciepts.push(reciept);
       }
     });
     console.log(this.state.reciepts)
@@ -330,10 +330,11 @@ export class Dapp extends React.Component {
     }
   }
 
-  uploadHandler = async (files) => {
+  uploadHandler = async (files, addr) => {
     const fileUploadPromises = files.map(async ({ file }) => {
       const fileName = uuidv4();
       console.log(fileName);
+      console.log(addr);
       const storageRef = ref(storage, fileName);
 
       await uploadBytes(storageRef, file);
@@ -348,7 +349,7 @@ export class Dapp extends React.Component {
         url: downloadUrl,
       };
       // 토큰 민팅을 위한 mint 함수 호출
-      const transaction = await this._token.mintNFT(tokenMetadata, tokenId);
+      const transaction = await this._token.mintNFT(tokenMetadata, tokenId, addr);
       await transaction.wait();
 
       console.log('File uploaded and token minted successfully!');
@@ -370,12 +371,33 @@ export class Dapp extends React.Component {
     }
   }
 
+
+
+  // isTokenOwner = async (tokenId) => {
+  //   const tokenIdBigNumber = ethers.BigNumber.from(tokenId);
+  //   const owner = await this._token.ownerOf(tokenIdBigNumber);
+  //   console.log(owner);
+  //   return owner.toLowerCase() === this.state.selectedAddress.toLowerCase()
+  // }
   isTokenOwner = async (tokenId) => {
     const tokenIdBigNumber = ethers.BigNumber.from(tokenId);
     try {
-      const owner = await this._token.ownerOf(tokenIdBigNumber);
-      console.log(owner);
-      return owner.toLowerCase() === this.state.selectedAddress.toLowerCase();
+      const owners = await this._token.getTokenOwners(tokenIdBigNumber);
+    // owners 배열이 존재하지 않으면 소유자가 아님을 반환
+      if (!owners) {
+        console.log("owners empty");
+        return false;
+      }
+    
+      for (let i = 0; i < owners.length; i++) {
+        const owner = owners[i];
+        if (owner.toLowerCase() === this.state.selectedAddress.toLowerCase()) {
+          console.log(owner);
+          return true; // 소유자로 확인됨
+        }
+      }
+    
+      return false; // 소유자가 아님
     } catch (e) {
       return false;
     }
@@ -385,6 +407,7 @@ export class Dapp extends React.Component {
     const metadata = await this._token.getTokenMetadata(tokenId);
     return metadata?.url;
   }
+    // const owners = await this._token.tokenOwners[tokenId];
 }
 
 const uuidTouint256 = (uuid) => {

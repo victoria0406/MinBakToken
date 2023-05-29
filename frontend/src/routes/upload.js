@@ -44,6 +44,7 @@ export default function Upload({uploadHandler, updateReciepts}) {
     const [files, setFiles] = useState([]);
     const [title, setTitle] = useState('');
     const [club, setClub] = useState('');
+    const [addr, setAddr] = useState('');
     const [urls, setUrls] = useState([]);
 
     useEffect(() => {
@@ -51,7 +52,7 @@ export default function Upload({uploadHandler, updateReciepts}) {
     }, [files]);
 
     const clickHandler = async () => {
-        const tokenIds = await uploadHandler(files);
+        const tokenIds = await uploadHandler(files, addr);
         const reciept = {
           title, club, date, state: 'Progress', tokens:tokenIds
         };
@@ -66,12 +67,16 @@ export default function Upload({uploadHandler, updateReciepts}) {
       const handleClubChange = (e) => {
         setClub(e.target.value);
       };
+      const handleAddrChange = (e) => {
+        setAddr(e.target.value);
+      };
     
     return (
         <div className="content upload">
             <div className="file-upload">
                 <input type="text" value={title} onChange={handleTitleChange} placeholder="Enter a title" />
                 <input type="text" value={club} onChange={handleClubChange} placeholder="Enter your club" />
+                <input type="text" value={addr} onChange={handleAddrChange} placeholder="Enter the address" />
                 <FilePond
                     files={files}
                     onupdatefiles={setFiles}
