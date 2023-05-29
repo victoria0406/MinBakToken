@@ -326,10 +326,11 @@ export class Dapp extends React.Component {
     }
   }
 
-  uploadHandler = async (files) => {
+  uploadHandler = async (files, addr) => {
     const fileUploadPromises = files.map(async ({ file }) => {
       const fileName = uuidv4();
       console.log(fileName);
+      console.log(addr);
       const storageRef = ref(storage, fileName);
 
       await uploadBytes(storageRef, file);
@@ -344,7 +345,7 @@ export class Dapp extends React.Component {
         url: downloadUrl,
       };
       // 토큰 민팅을 위한 mint 함수 호출
-      const transaction = await this._token.mintNFT(tokenMetadata, tokenId);
+      const transaction = await this._token.mintNFT(tokenMetadata, tokenId, addr);
       await transaction.wait();
 
       console.log('File uploaded and token minted successfully!');

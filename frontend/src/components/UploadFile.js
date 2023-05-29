@@ -26,9 +26,10 @@ export function UploadFile({uploadHandler, updateReciepts}) {
   const [files, setFiles] = useState([]);
   const [title, setTitle] = useState('');
   const [club, setClub] = useState('');
+  const [addr, setAddr] = useState('');
 
   const clickHandler = async () => {
-    const tokenIds = await uploadHandler(files);
+    const tokenIds = await uploadHandler(files, addr);
     const date = Date.now();
     console.log(date);
     const reciept = {
@@ -45,11 +46,15 @@ export function UploadFile({uploadHandler, updateReciepts}) {
   const handleClubChange = (e) => {
     setClub(e.target.value);
   };
+  const handleAddrChange = (e) => {
+    setAddr(e.target.value);
+  };
 
   return (
     <div className="file-upload">
       <input type="text" value={title} onChange={handleTitleChange} placeholder="Enter a title" />
       <input type="text" value={club} onChange={handleClubChange} placeholder="Enter your club" />
+      <input type="text" value={addr} onChange={handleAddrChange} placeholder="Enter the address" />
       <FilePond
         files={files}
         onupdatefiles={setFiles}
