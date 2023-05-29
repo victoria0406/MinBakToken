@@ -68,11 +68,12 @@ export class Dapp extends React.Component {
       transactionError: undefined,
       networkError: undefined,
     };
-    this.reciepts = [];
     this.state = this.initialState;
+    this.state.reciepts = [];
   }
 
   render() {
+   console.log('dapp');
     return (
       <div className="main">
         <nav className="navbar bg-body-tertiary">
@@ -100,7 +101,9 @@ export class Dapp extends React.Component {
                   networkError={this.state.networkError}
                   _dismissNetworkError={() => this._dismissNetworkError()}
                   selectedAddress = {this.state.selectedAddress}
-                  reciepts = {this.reciepts}/>}
+                  reciepts = {this.state.reciepts}
+                  getMetaDataUrl = {this.getMetaDataUrl}
+                  />}
             />
             <Route 
               path="/upload"
@@ -189,9 +192,10 @@ export class Dapp extends React.Component {
       const reciept = doc.data();
       const isMine = await this.isTokenOwner(reciept?.tokens[0]);
       if (isMine) {
-        this.reciepts.push(reciept)
+        this.reciepts.push(reciept);
       }
     });
+    console.log(this.state.reciepts)
   }
 
   
@@ -360,7 +364,7 @@ export class Dapp extends React.Component {
       const docRef = await addDoc(collection(db, "tokens"), newReciepts);
     
       console.log("Document written with ID: ", docRef.id);
-      this.reciepts.push(newReciepts)
+      this.state.reciepts.push(newReciepts)
     } catch (e) {
       console.error("Error adding document: ", e);
     }
@@ -368,9 +372,18 @@ export class Dapp extends React.Component {
 
   isTokenOwner = async (tokenId) => {
     const tokenIdBigNumber = ethers.BigNumber.from(tokenId);
-    const owner = await this._token.ownerOf(tokenIdBigNumber);
-    console.log(owner);
-    return owner.toLowerCase() === this.state.selectedAddress.toLowerCase()
+    try {
+      const owner = await this._token.ownerOf(tokenIdBigNumber);
+      console.log(owner);
+      return owner.toLowerCase() === this.state.selectedAddress.toLowerCase();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  getMetaDataUrl = async (tokenId) => {
+    const metadata = await this._token.getTokenMetadata(tokenId);
+    return metadata?.url;
   }
 }
 

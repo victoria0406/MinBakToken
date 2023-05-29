@@ -1,5 +1,5 @@
 import ConnectWallet from "./connectWallet";
-import Main from "./main";
+import Main, { MemoMain } from "./main";
 import Upload from "./upload";
 
 export {

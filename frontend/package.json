@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@cyntler/react-doc-viewer": "^1.13.0",
     "bootstrap": "^4.6.2",
     "ethers": "^5.4.7",
     "filepond": "^4.30.4",
