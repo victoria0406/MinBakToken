@@ -14,9 +14,9 @@ function toStringByFormatting(source, delimiter = '-') {
     return [year, month, day].join(delimiter);
 }
 
-export function RecieptContainer({title, club, date, state}) {
+export function RecieptContainer({title, club, date, state, onClick}) {
     return (
-        <div className="reciept-container">
+        <div className="reciept-container" onClick={onClick}>
             <div>
                 <b>{title}</b>
                 <hr/>

@@ -53,6 +53,13 @@ contract Token is ERC721URIStorage, Ownable{
         // 실제 구현 방식은 토큰 컨트랙트의 로직과 요구사항에 따라 다를 수 있습니다.
     }
 
+    function getTokenMetadata(uint256 tokenId) public view returns (TokenMetadata memory) {
+        return tokenMetadataMap[tokenId];
+        // 또는 토큰 ID에 해당하는 토큰의 메타데이터를 토큰 컨트랙트의 상태 변수에 저장할 수도 있습니다.
+        //Token[tokenId].metadata = tokenMetadata;
+        // 실제 구현 방식은 토큰 컨트랙트의 로직과 요구사항에 따라 다를 수 있습니다.
+    }
+
    function mintNFT(TokenMetadata memory tokenMetadata, uint256 tokenId, address addr) public {
         require(!_exists(tokenId), "Token ID already exists");
 

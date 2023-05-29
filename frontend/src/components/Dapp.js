@@ -68,11 +68,12 @@ export class Dapp extends React.Component {
       transactionError: undefined,
       networkError: undefined,
     };
-    this.reciepts = [];
     this.state = this.initialState;
+    this.state.reciepts = [];
   }
 
   render() {
+   console.log('dapp');
     return (
       <div className="main">
         <nav className="navbar bg-body-tertiary">
@@ -100,7 +101,9 @@ export class Dapp extends React.Component {
                   networkError={this.state.networkError}
                   _dismissNetworkError={() => this._dismissNetworkError()}
                   selectedAddress = {this.state.selectedAddress}
-                  reciepts = {this.reciepts}/>}
+                  reciepts = {this.state.reciepts}
+                  getMetaDataUrl = {this.getMetaDataUrl}
+                  />}
             />
             <Route 
               path="/upload"
@@ -189,9 +192,10 @@ export class Dapp extends React.Component {
       const reciept = doc.data();
       const isMine = await this.isTokenOwner(reciept?.tokens[0]);
       if (isMine) {
-        this.reciepts.push(reciept)
+        this.state.reciepts.push(reciept);
       }
     });
+    console.log(this.state.reciepts)
   }
 
   
@@ -361,7 +365,7 @@ export class Dapp extends React.Component {
       const docRef = await addDoc(collection(db, "tokens"), newReciepts);
     
       console.log("Document written with ID: ", docRef.id);
-      this.reciepts.push(newReciepts)
+      this.state.reciepts.push(newReciepts)
     } catch (e) {
       console.error("Error adding document: ", e);
     }
@@ -377,24 +381,33 @@ export class Dapp extends React.Component {
   // }
   isTokenOwner = async (tokenId) => {
     const tokenIdBigNumber = ethers.BigNumber.from(tokenId);
-    // const owners = await this._token.tokenOwners[tokenId];
-    const owners = await this._token.getTokenOwners(tokenIdBigNumber);
+    try {
+      const owners = await this._token.getTokenOwners(tokenIdBigNumber);
     // owners 배열이 존재하지 않으면 소유자가 아님을 반환
-    if (!owners) {
-      console.log("owners empty");
+      if (!owners) {
+        console.log("owners empty");
+        return false;
+      }
+    
+      for (let i = 0; i < owners.length; i++) {
+        const owner = owners[i];
+        if (owner.toLowerCase() === this.state.selectedAddress.toLowerCase()) {
+          console.log(owner);
+          return true; // 소유자로 확인됨
+        }
+      }
+    
+      return false; // 소유자가 아님
+    } catch (e) {
       return false;
     }
-  
-    for (let i = 0; i < owners.length; i++) {
-      const owner = owners[i];
-      if (owner.toLowerCase() === this.state.selectedAddress.toLowerCase()) {
-        console.log(owner);
-        return true; // 소유자로 확인됨
-      }
-    }
-  
-    return false; // 소유자가 아님
-  };
+  }
+
+  getMetaDataUrl = async (tokenId) => {
+    const metadata = await this._token.getTokenMetadata(tokenId);
+    return metadata?.url;
+  }
+    // const owners = await this._token.tokenOwners[tokenId];
 }
 
 const uuidTouint256 = (uuid) => {
