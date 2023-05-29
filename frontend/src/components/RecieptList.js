@@ -20,7 +20,24 @@ export function RecieptList({reciepts, getMetaDataUrl}){
     const handleShow = () => setShow(true);
     const [uris, setUris] = useState([]);
     console.log('reciept list');
+
+    const updateUris = async (tokens)=> {
+        if (tokens != null) {
+            const uris = [];
+            for (const token of tokens) {
+                const uri = await getMetaDataUrl(token);
+                uris.push(uri);
+            }
+            setUris(uris);
+            console.log(uris);
+        }
+    }
     // 여기서 metadata에서 url 얻어오는 과정이 추가되야함.
+    useEffect(() => {
+        const tokens =  reciept?.tokens;
+        console.log('tokens', tokens);
+        updateUris(tokens);
+    }, [reciept])
     return (
         <div className="reciept-list">
             {reciepts.sort(statusSortFunc).map((ele, i) => {
@@ -42,10 +59,7 @@ export function RecieptList({reciepts, getMetaDataUrl}){
                         club={reciept?.club}
                         date={reciept?.date}
                         state={reciept?.state}
-                        uris={[
-                            "https://cdn.univ20.com/wp-content/uploads/2015/07/b3f4c1f2d3ab564d4901cdf151fe64cc.jpg",
-                            "https://image-notepet.akamaized.net/article/201506/fb_136329171789426.jpg"
-                        ]}
+                        uris={uris}
                     />
                 </Modal.Body>
                 <Modal.Footer>

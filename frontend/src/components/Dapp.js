@@ -188,14 +188,17 @@ export class Dapp extends React.Component {
 
   async _initializeReciepts() {
     const getReciepts = await getDocs(collection(db, "tokens"));
-    getReciepts.forEach(async (doc) => {
+    const reciepts = [];
+    for (const doc of getReciepts.docs) {
       const reciept = doc.data();
       const isMine = await this.isTokenOwner(reciept?.tokens[0]);
       if (isMine) {
-        this.state.reciepts.push(reciept);
+        reciepts.push(reciept);
+        console.log('is mine');
       }
-    });
-    console.log(this.state.reciepts)
+    }
+    this.state.reciepts = reciepts;
+    console.log(this.state.reciepts);
   }
 
   
