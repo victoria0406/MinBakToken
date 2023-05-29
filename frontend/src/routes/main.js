@@ -3,7 +3,7 @@ import React from 'react'
 import {
     ConnectWallet,
     MainVisual,
-    RecieptList,
+    MemoRecieptList,
 } from '../components'
 
 export default function Main({_connectWallet, _dismissNetworkError, selectedAddress, networkError, reciepts, getMetaDataUrl}) {
@@ -25,7 +25,7 @@ export default function Main({_connectWallet, _dismissNetworkError, selectedAddr
             selectedAddress &&
               <div className="main-content">
                 <h4>Your Reciepts</h4>
-                <RecieptList reciepts={reciepts} getMetaDataUrl = {getMetaDataUrl} />
+                <MemoRecieptList reciepts={reciepts} getMetaDataUrl = {getMetaDataUrl} />
               </div>
           }
         </div>
