@@ -5,10 +5,10 @@ export function MainVisual() {
 
   return (
     <div className="main-visual">
-      <p>Catch Prise!!!</p>
+      <p>Share Your Club Receipts!</p>
       <Link to="/upload">
         <button>
-          Add New Reciept
+          Add New Receipt
         </button>
       </Link>
 

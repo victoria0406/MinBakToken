@@ -23,6 +23,23 @@
     text-shadow: none;
     box-shadow: none;
 }
+@mixin glow-box{
+    z-index: -1;
+    opacity: 0.4;
+    animation: glow-animation 2s infinite;
+}
+  
+@keyframes glow-animation {
+0% {
+    opacity: 0.4;
+}
+50% {
+    opacity: 1;
+}
+100% {
+    opacity: 0.4;
+}
+}
 
 body {
     font-family: 'Poppins', sans-serif;
@@ -103,6 +120,7 @@ button {
                 height: calc((100vh - 200px) / 2);
                 justify-content: space-between;
                 padding: 12px;
+                user-select: none;
                 &:hover {
                     transform: rotate(1deg);
                 }
@@ -129,6 +147,23 @@ button {
                 }
                 hr {
                     border: 1px solid rgba( 255, 255, 255, 0.25 );
+                }
+                .placeholder span {
+                    @include glow-box;
+
+                    display: inline-block;
+                    background-color: rgba( 255, 255, 255, 0.5 );
+                    color: #0000;
+                    text-shadow: none;
+                    height: inherit;
+                    padding: 0;
+                    margin-right: 12px;
+                    &.label {
+                        width: 20%;
+                    }
+                    &.content {
+                        width: 60%;
+                    }
                 }
             }
         }
@@ -208,6 +243,19 @@ button {
     button {
         width: 100%;
     }
+    #file-name {
+        display: none;
+    }
+}
+.screen-overlay {
+    position: fixed;
+    inset: 0 0 0 0;
+    width: 100vw !important;
+    height: 100vh;
+    background-color: #0008;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 // .file-upload {
