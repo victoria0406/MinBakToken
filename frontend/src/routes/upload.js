@@ -15,49 +15,44 @@ import 'filepond/dist/filepond.min.css'
 import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orientation'
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview'
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css'
-import { Button } from 'bootstrap'
+import { toStringByFormatting } from "../utils/dateParser";
 
 // Register the plugins
 registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview);
 
-function leftPad(value) {
-    if (value >= 10) {
-        return value;
-    }
 
-    return `0${value}`;
-}
-
-function toStringByFormatting(source, delimiter = '-') {
-    const year = source.getFullYear();
-    const month = leftPad(source.getMonth() + 1);
-    const day = leftPad(source.getDate());
-
-    return [year, month, day].join(delimiter);
-}
-
-export default function Upload({uploadHandler, updateReciepts}) {
+export default function Upload({uploadHandler, updateReciepts, myAddr}) {
     const navigate = useNavigate();
     const date = Date.now();
     console.log('hihi')
 
     const [files, setFiles] = useState([]);
-    const [title, setTitle] = useState('');
-    const [club, setClub] = useState('');
-    const [addr, setAddr] = useState('');
+    const [title, setTitle] = useState();
+    const [club, setClub] = useState();
+    const [addr, setAddr] = useState();
     const [urls, setUrls] = useState([]);
+    const [isMinting, setIsMinting] = useState(false);
 
     useEffect(() => {
         setUrls(files.map(({file}) => URL.createObjectURL(file)));
     }, [files]);
 
     const clickHandler = async () => {
-        const tokenIds = await uploadHandler(files, addr);
-        const reciept = {
-          title, club, date, state: 'Progress', tokens:tokenIds
-        };
-        updateReciepts(reciept);
+        setIsMinting(true);
+        try {
+            let inputAddr = addr;
+            if (!inputAddr) inputAddr = myAddr;
+            const tokenIds = await uploadHandler(files, inputAddr);
+            const reciept = {
+              title, club, date, state: 'Progress', tokens:tokenIds
+            };
+            updateReciepts(reciept);
+        } catch (e) {
+            console.error(e.message);
+        }
+        setIsMinting(false);
         navigate('/');
+        window.location.reload()
       }
         
       const handleTitleChange = (e) => {
@@ -74,9 +69,11 @@ export default function Upload({uploadHandler, updateReciepts}) {
     return (
         <div className="content upload">
             <div className="file-upload">
-                <input type="text" value={title} onChange={handleTitleChange} placeholder="Enter a title" />
-                <input type="text" value={club} onChange={handleClubChange} placeholder="Enter your club" />
-                <input type="text" value={addr} onChange={handleAddrChange} placeholder="Enter the address" />
+                <div className='text-inputs'>
+                    <h3><label>Title: </label><input type="text" value={title} onChange={handleTitleChange} placeholder="Enter a title" /></h3>
+                    <p><label>Club: </label><input type="text" value={club} onChange={handleClubChange} placeholder="Enter your club" /></p>
+                    <p><label>Address: </label><input type="text" value={addr} onChange={handleAddrChange} placeholder="Enter the address" /></p>
+                </div>
                 <FilePond
                     files={files}
                     onupdatefiles={setFiles}
@@ -87,7 +84,9 @@ export default function Upload({uploadHandler, updateReciepts}) {
                 />
                 <button
                     onClick={clickHandler}
-                >Mint Your Reciepts</button>
+                >
+                    Mint Your Reciepts
+                </button>
             </div>
             <MemoPreview
                 title={title}
@@ -96,6 +95,9 @@ export default function Upload({uploadHandler, updateReciepts}) {
                 state="Progress"
                 uris={urls}
             />
+            {
+                isMinting && <div className='screen-overlay'>Waiting For Finishing Minting</div>
+            }
         </div>
     )
 }

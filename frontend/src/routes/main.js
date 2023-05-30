@@ -6,7 +6,7 @@ import {
     MemoRecieptList,
 } from '../components'
 
-export default function Main({_connectWallet, _dismissNetworkError, selectedAddress, networkError, reciepts, getMetaDataUrl}) {
+export default function Main({_connectWallet, _dismissNetworkError, selectedAddress, networkError, reciepts, getMetaDataUrl, isLoading}) {
     return (
         <div className="content">
           {
@@ -24,8 +24,8 @@ export default function Main({_connectWallet, _dismissNetworkError, selectedAddr
           {
             selectedAddress &&
               <div className="main-content">
-                <h4>Your Reciepts</h4>
-                <MemoRecieptList reciepts={reciepts} getMetaDataUrl = {getMetaDataUrl} />
+                <h4>Your Receipts</h4>
+                <MemoRecieptList reciepts={reciepts} getMetaDataUrl = {getMetaDataUrl} isLoading = {isLoading}/>
               </div>
           }
         </div>

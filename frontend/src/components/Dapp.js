@@ -35,7 +35,7 @@ import {
 
 
 // This is the default id used by the Hardhat Network
-const HARDHAT_NETWORK_ID = '31337';
+const HARDHAT_NETWORK_ID = '11155111';
 
 // This is an error code that indicates that the user canceled a transaction
 const ERROR_CODE_TX_REJECTED_BY_USER = 4001;
@@ -70,10 +70,10 @@ export class Dapp extends React.Component {
     };
     this.state = this.initialState;
     this.state.reciepts = [];
+    this.state.loadingReciepts = false;
   }
 
   render() {
-   console.log('dapp');
     return (
       <div className="main">
         <nav className="navbar bg-body-tertiary">
@@ -81,14 +81,6 @@ export class Dapp extends React.Component {
             <a className="navbar-brand" href="/">
               Club NFT
             </a>
-            <div>
-              <div className="icon-button">
-                <Bell/>
-              </div>
-              <div className="icon-button">
-                <Person />
-              </div>
-            </div>
           </div>
         </nav>
         {
@@ -103,11 +95,16 @@ export class Dapp extends React.Component {
                   selectedAddress = {this.state.selectedAddress}
                   reciepts = {this.state.reciepts}
                   getMetaDataUrl = {this.getMetaDataUrl}
+                  isLoading = {this.state.loadingReciepts}
                   />}
             />
             <Route 
               path="/upload"
-              element={<Upload uploadHandler = {this.uploadHandler} updateReciepts={this.updateReciepts}/>}
+              element={<Upload 
+                uploadHandler = {this.uploadHandler}
+                updateReciepts={this.updateReciepts}
+                myAddr={this.state.selectedAddress}
+              />}
             />
           </Routes>
         }
@@ -187,18 +184,26 @@ export class Dapp extends React.Component {
   }
 
   async _initializeReciepts() {
-    const getReciepts = await getDocs(collection(db, "tokens"));
-    const reciepts = [];
-    for (const doc of getReciepts.docs) {
-      const reciept = doc.data();
-      const isMine = await this.isTokenOwner(reciept?.tokens[0]);
-      if (isMine) {
-        reciepts.push(reciept);
-        console.log('is mine');
+    this.state.loadingReciepts = true;
+    try {
+      const getReciepts = await getDocs(collection(db, "tokens"));
+      const reciepts = [];
+      for (const doc of getReciepts.docs) {
+        const reciept = doc.data();
+        const isMine = await this.isTokenOwner(reciept?.tokens[0]);
+        if (isMine) {
+          reciepts.push(reciept);
+        }
       }
+      this.state.reciepts = reciepts;
+    } catch {
+      console.error('cannot load firebase or tokens');
+      this.state.reciept = [
+        {title: "test", club: "test", date: "1970-01-01", state: "Done", tokens: []}
+      ]
     }
-    this.state.reciepts = reciepts;
-    console.log(this.state.reciepts);
+    
+    this.state.loadingReciepts = false;
   }
 
   
@@ -363,12 +368,12 @@ export class Dapp extends React.Component {
     return await Promise.all(fileUploadPromises);
   };
 
-  updateReciepts = async (newReciepts) => {
+  updateReciepts = async (newReciept) => {
     try {
-      const docRef = await addDoc(collection(db, "tokens"), newReciepts);
-    
-      console.log("Document written with ID: ", docRef.id);
-      this.state.reciepts.push(newReciepts)
+      await addDoc(collection(db, "tokens"), newReciept);
+      const newReciepts =  this.state.reciepts;
+      newReciepts.push(newReciept);
+      this.state.reciepts = newReciepts;
     } catch (e) {
       console.error("Error adding document: ", e);
     }
@@ -383,8 +388,9 @@ export class Dapp extends React.Component {
   //   return owner.toLowerCase() === this.state.selectedAddress.toLowerCase()
   // }
   isTokenOwner = async (tokenId) => {
-    const tokenIdBigNumber = ethers.BigNumber.from(tokenId);
+    if (!tokenId) return;
     try {
+      const tokenIdBigNumber = ethers.BigNumber.from(tokenId);
       const owners = await this._token.getTokenOwners(tokenIdBigNumber);
     // owners 배열이 존재하지 않으면 소유자가 아님을 반환
       if (!owners) {

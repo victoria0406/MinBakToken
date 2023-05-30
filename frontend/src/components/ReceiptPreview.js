@@ -1,13 +1,14 @@
 import React from "react";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
+import { toStringByFormatting } from "../utils/dateParser"
 
-export function ReceiptPreview({title, club, date, state, uris=[]}) {
+export function ReceiptPreview({title = 'Preview', club='Your Club', date='', state='Progress', uris=[]}) {
     const docs = uris.map((uri) => {return {uri}});
     return (
-        <div>
+        <div className="receipt-preview">
             <h3>{title}</h3>
             <p>Club: {club}</p>
-            <p>Date: {date}</p>
+            <p>Date: {toStringByFormatting(date)}</p>
             <DocViewer documents={docs} pluginRenderers={DocViewerRenderers} sandbox="allow-scripts"/>
         </div>
     )

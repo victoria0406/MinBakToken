@@ -13,11 +13,8 @@ const statusSortFunc= (r1, r2) => {
     return statusIndex[r1.status] - statusIndex[r2.status]
 }
 
-export function RecieptList({reciepts, getMetaDataUrl}){
-    const [show, setShow] = useState(false);
+export function RecieptList({reciepts, getMetaDataUrl, isLoading}){
     const [reciept, setReciept] = useState(null);
-    const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
     const [uris, setUris] = useState([]);
     console.log('reciept list');
 
@@ -40,19 +37,23 @@ export function RecieptList({reciepts, getMetaDataUrl}){
     }, [reciept])
     return (
         <div className="reciept-list">
-            {reciepts.sort(statusSortFunc).map((ele, i) => {
-                return <RecieptContainer 
-                    title={ele.title}
-                    club={ele.club}
-                    date={ele.date}
-                    state={ele.state}
-                    key={i} 
-                    onClick = {() => setReciept(ele)}
-                />;
-            })}
+            {
+                !isLoading && reciepts.sort(statusSortFunc).map((ele, i) => {
+                    return <RecieptContainer 
+                        title={ele.title}
+                        club={ele.club}
+                        date={ele.date}
+                        state={ele.state}
+                        key={i} 
+                        onClick = {() => setReciept(ele)}
+                    />;
+                }
+            )}
+            {
+                isLoading && 
+                <RecieptContainer />
+            }
             <Modal show={reciept?.title != null} onHide={() => setReciept(null)}>
-                <Modal.Header closeButton>
-                </Modal.Header>
                 <Modal.Body>
                     <MemoPreview
                         title={reciept?.title}
