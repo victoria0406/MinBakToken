@@ -388,6 +388,7 @@ export class Dapp extends React.Component {
   //   return owner.toLowerCase() === this.state.selectedAddress.toLowerCase()
   // }
   isTokenOwner = async (tokenId) => {
+    if (!tokenId) return;
     try {
       const tokenIdBigNumber = ethers.BigNumber.from(tokenId);
       const owners = await this._token.getTokenOwners(tokenIdBigNumber);
